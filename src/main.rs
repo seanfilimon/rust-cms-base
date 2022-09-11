@@ -8,8 +8,10 @@ mod errors;
 mod handlers;
 mod models;
 mod utils;
+mod ws;
 
 use handlers::user::*;
+use ws::*;
 
 #[derive(Debug, Default, Deserialize)]
 pub struct MyConfig {
@@ -33,6 +35,7 @@ async fn main() -> std::io::Result<()> {
         actix_web::App::new()
             .app_data(actix_web::web::Data::new(pool.clone()))
             .service(actix_web::web::resource("/").to(|| async { "Hello world!" }))
+            .service(actix_web::web::resource("/ws/").to(ws_index))
             .service(login_admin)
             .service(create_admin_acc)
             .service(login_user)

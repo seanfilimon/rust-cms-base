@@ -46,6 +46,11 @@ impl From<jsonwebtoken::errors::Error> for MyError {
     }
 }
 
+impl From<actix_web::Error> for MyError {
+    fn from(e: actix_web::error::Error) -> Self {
+        MyError::BadRequest(format!("Actix error: {}", e.to_string()))
+    }
+}
 
 impl ResponseError for MyError {
     fn error_response(&self) -> HttpResponse {
