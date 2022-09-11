@@ -8,6 +8,7 @@ pub enum MyError {
     PGError(tokio_postgres::Error),
     PGMError(tokio_pg_mapper::Error),
     PoolError(deadpool_postgres::PoolError),
+    BadRequest(String),
 }
 
 impl std::error::Error for MyError {}
@@ -19,6 +20,7 @@ impl ResponseError for MyError {
             MyError::PoolError(ref err) => {
                 HttpResponse::InternalServerError().body(err.to_string())
             }
+            MyError::BadRequest(ref err) => HttpResponse::BadRequest().body(err.to_string()),
             _ => HttpResponse::InternalServerError().finish(),
         }
     }
