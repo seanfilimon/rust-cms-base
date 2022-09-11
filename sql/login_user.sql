@@ -1,0 +1,1 @@
+SELECT * FROM optic.users WHERE email = $1

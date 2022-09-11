@@ -31,9 +31,12 @@ async fn main() -> std::io::Result<()> {
 
     let server = actix_web::HttpServer::new(move || {
         actix_web::App::new()
+            .app_data(actix_web::web::Data::new(pool.clone()))
             .service(actix_web::web::resource("/").to(|| async { "Hello world!" }))
             .service(login_admin)
-            .app_data(actix_web::web::Data::new(pool.clone()))
+            .service(create_admin_acc)
+            .service(login_user)
+            .service(create_user_acc)
     })
     .bind(config.server_addr)?;
     server.run().await
