@@ -1,17 +1,18 @@
 use std::time::Instant;
 
+use crate::errors::MyError;
 use actix::prelude::*;
 use actix_web::{web, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
 
-use crate::errors::MyError;
-
-pub struct MyWs {
+struct MyWs {
     hb: Instant,
 }
 
 impl MyWs {
-    fn new() -> Self { Self { hb: Instant::now() } }
+    fn new() -> Self {
+        Self { hb: Instant::now() }
+    }
 
     fn hb(&self, ctx: &mut <Self as Actor>::Context) {
         ctx.run_interval(std::time::Duration::from_secs(5), |act, ctx| {
@@ -55,8 +56,67 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWs {
     }
 }
 
-pub async fn ws_index(r: HttpRequest, stream: web::Payload) -> Result<HttpResponse, MyError> {
-    let resp = ws::start(MyWs::new(), &r, stream)?;
-    println!("WS: Handshake response: {:?}", resp);
-    Ok(resp)
+#[derive(Message, Clone)]
+#[rtype(result = "()")]
+struct ServerEvent {
+    pub event: String,
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+
+struct RegisterWsClient {
+    client: Addr<MyWs>,
+}
+
+#[derive(Default, Clone)]
+pub struct ServerMonitor {
+    clients: Vec<Addr<MyWs>>,
+}
+
+impl ServerMonitor {
+    pub fn new() -> Addr<Self> {
+        ServerMonitor::default().start()
+    }
+}
+
+impl Actor for ServerMonitor {
+    type Context = Context<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        ctx.run_interval(std::time::Duration::from_secs(5), |act, _| {
+            for client in act.clients.iter() {
+                client.do_send(ServerEvent {
+                    event: "alive".to_string(),
+                });
+            }
+        });
+    }
+}
+
+impl Handler<RegisterWsClient> for ServerMonitor {
+    type Result = ();
+
+    fn handle(&mut self, msg: RegisterWsClient, _: &mut Context<Self>) {
+        self.clients.push(msg.client);
+    }
+}
+
+impl Handler<ServerEvent> for MyWs {
+    type Result = ();
+
+    fn handle(&mut self, msg: ServerEvent, ctx: &mut Self::Context) {
+        ctx.text(msg.event);
+    }
+}
+
+pub async fn ws_index(
+    r: HttpRequest,
+    stream: web::Payload,
+    data: web::Data<Addr<ServerMonitor>>,
+) -> Result<HttpResponse, MyError> {
+    let (addr, res) = ws::WsResponseBuilder::new(MyWs::new(), &r, stream).start_with_addr()?;
+    data.get_ref().do_send(RegisterWsClient { client: addr });
+    println!("WS: Handshake response: {:?}", res);
+    Ok(res)
 }

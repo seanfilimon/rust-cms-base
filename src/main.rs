@@ -1,3 +1,4 @@
+use actix_web::web;
 use config::Config;
 use dotenv::dotenv;
 use serde::Deserialize;
@@ -30,12 +31,14 @@ async fn main() -> std::io::Result<()> {
         .unwrap();
 
     let pool = config.pg.create_pool(None, NoTls).unwrap();
+    let srvmon = ServerMonitor::new();
 
     let server = actix_web::HttpServer::new(move || {
         actix_web::App::new()
             .app_data(actix_web::web::Data::new(pool.clone()))
+            .app_data(actix_web::web::Data::new(srvmon.clone()))
             .service(actix_web::web::resource("/").to(|| async { "Hello world!" }))
-            .service(actix_web::web::resource("/ws/").to(ws_index))
+            .service(actix_web::web::resource("/ws/").route(web::get().to(ws_index)))
             .service(login_admin)
             .service(create_admin_acc)
             .service(login_user)
