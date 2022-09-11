@@ -7,8 +7,9 @@ mod db;
 mod errors;
 mod handlers;
 mod models;
+mod utils;
 
-use handlers::add_user::*;
+use handlers::user::*;
 
 #[derive(Debug, Default, Deserialize)]
 pub struct MyConfig {
@@ -31,7 +32,7 @@ async fn main() -> std::io::Result<()> {
     let server = actix_web::HttpServer::new(move || {
         actix_web::App::new()
             .service(actix_web::web::resource("/").to(|| async { "Hello world!" }))
-            .service(add_user)
+            .service(login_admin)
             .app_data(actix_web::web::Data::new(pool.clone()))
     })
     .bind(config.server_addr)?;

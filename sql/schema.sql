@@ -3,5 +3,13 @@ CREATE SCHEMA optic;
 CREATE TABLE optic.users (
   id BIGSERIAL PRIMARY KEY,
   name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE
+  email TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL
 );
+
+CREATE TABLE optic.admins (
+    id       BIGSERIAL PRIMARY KEY,
+    name     TEXT NOT NULL,
+    email    TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL
+)

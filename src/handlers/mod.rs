@@ -1,1 +1,1 @@
-pub(crate) mod add_user;
+pub(crate) mod user;

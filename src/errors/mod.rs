@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use actix_web::{HttpResponse, ResponseError};
 use derive_more::{Display, From};
 
