@@ -37,6 +37,8 @@ async fn main() -> std::io::Result<()> {
             .service(create_admin_acc)
             .service(login_user)
             .service(create_user_acc)
+            .service(refresh_user)
+            .service(refresh_admin)
     })
     .bind(config.server_addr)?;
     server.run().await
