@@ -1,8 +1,8 @@
-use std::fmt::{Formatter};
-use actix_web::{HttpResponse, ResponseError};
 use actix_web::cookie::time::error::ComponentRange;
+use actix_web::{HttpResponse, ResponseError};
 use bcrypt::BcryptError;
-use derive_more::{From};
+use derive_more::From;
+use std::fmt::Formatter;
 
 #[derive(From, Debug)]
 pub enum MyError {
@@ -15,7 +15,6 @@ pub enum MyError {
 }
 
 impl std::error::Error for MyError {}
-
 
 impl std::fmt::Display for MyError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -62,7 +61,9 @@ impl ResponseError for MyError {
                 HttpResponse::InternalServerError().body(err.to_string())
             }
             MyError::BadRequest(ref err) => HttpResponse::BadRequest().body(err.to_string()),
-            _ => HttpResponse::InternalServerError().finish(),
+            MyError::Unauthorized => HttpResponse::Unauthorized().finish(),
+            MyError::PGError(ref err) => HttpResponse::InternalServerError().body(err.to_string()),
+            MyError::PGMError(ref err) => HttpResponse::InternalServerError().body(err.to_string()),
         }
     }
 }

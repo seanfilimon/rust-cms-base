@@ -45,6 +45,8 @@ async fn main() -> std::io::Result<()> {
             .service(create_user_acc)
             .service(refresh_user)
             .service(refresh_admin)
+            .service(get_user)
+            .service(get_admin)
     })
     .bind(config.server_addr)?;
     server.run().await
