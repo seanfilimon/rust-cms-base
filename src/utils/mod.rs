@@ -137,4 +137,3 @@ pub fn validate_admin_token(token: &str, typee: &str) -> Result<Admin, MyError> 
     )?;
     Ok(token_data.claims.data)
 }
-

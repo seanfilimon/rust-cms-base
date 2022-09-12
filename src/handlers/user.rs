@@ -1,10 +1,13 @@
-use actix_web::{post, web, HttpResponse};
+use actix_web::*;
 use deadpool_postgres::Pool;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::{db, errors::MyError, models::User};
+use crate::handlers::verify_admin_headers;
 use crate::models::Admin;
-use crate::utils::{admin_tokens, user_tokens, validate_user_token, validate_admin_token};
+use crate::utils::{admin_tokens, user_tokens, validate_admin_token, validate_user_token};
+use crate::{db, errors::MyError, models::User};
+
+use super::verify_user_headers;
 
 #[post("/account/admin/login")]
 pub async fn login_admin(
@@ -62,19 +65,27 @@ pub struct RefreshToken {
 }
 
 #[post("/account/user/refresh")]
-pub async fn refresh_user(
-    refresh: web::Json<RefreshToken>,
-) -> Result<HttpResponse, MyError> {
+pub async fn refresh_user(refresh: web::Json<RefreshToken>) -> Result<HttpResponse, MyError> {
     let tok = refresh.into_inner().refresh_token;
     let claims = validate_user_token(tok.as_str(), "refresh")?;
     Ok(HttpResponse::Ok().json(user_tokens(claims)?))
 }
 
 #[post("/account/admin/refresh")]
-pub async fn refresh_admin(
-    refresh: web::Json<RefreshToken>,
-) -> Result<HttpResponse, MyError> {
+pub async fn refresh_admin(refresh: web::Json<RefreshToken>) -> Result<HttpResponse, MyError> {
     let tok = refresh.into_inner().refresh_token;
     let claims = validate_admin_token(tok.as_str(), "refresh")?;
     Ok(HttpResponse::Ok().json(admin_tokens(claims)?))
+}
+
+#[get("/account/user")]
+pub async fn get_user(req: HttpRequest) -> Result<HttpResponse, MyError> {
+    let user = verify_user_headers(&req)?;
+    Ok(HttpResponse::Ok().json(user))
+}
+
+#[get("/account/admin")]
+pub async fn get_admin(req: HttpRequest) -> Result<HttpResponse, MyError> {
+    let user = verify_admin_headers(&req)?;
+    Ok(HttpResponse::Ok().json(user))
 }

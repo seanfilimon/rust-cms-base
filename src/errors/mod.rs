@@ -7,6 +7,7 @@ use derive_more::{From};
 #[derive(From, Debug)]
 pub enum MyError {
     NotFound,
+    Unauthorized,
     PGError(tokio_postgres::Error),
     PGMError(tokio_pg_mapper::Error),
     PoolError(deadpool_postgres::PoolError),
@@ -20,6 +21,7 @@ impl std::fmt::Display for MyError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             MyError::NotFound => write!(f, "Not found"),
+            MyError::Unauthorized => write!(f, "Unauthorized"),
             MyError::PGError(e) => write!(f, "Postgres error: {}", e),
             MyError::PGMError(e) => write!(f, "Postgres mapper error: {}", e),
             MyError::PoolError(e) => write!(f, "Pool error: {}", e),
