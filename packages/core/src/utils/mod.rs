@@ -1,5 +1,7 @@
-use crate::errors::MyError;
-use crate::models::{Admin, User};
+use crate::{
+    errors::MyError,
+    models::{Admin, User},
+};
 use actix_web::cookie::time::{Duration, OffsetDateTime};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};

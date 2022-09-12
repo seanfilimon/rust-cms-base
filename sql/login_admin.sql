@@ -1,1 +1,0 @@
-SELECT * FROM optic.admins WHERE email = $1

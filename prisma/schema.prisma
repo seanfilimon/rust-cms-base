@@ -1,0 +1,41 @@
+generator client {
+  provider = "cargo prisma"
+  output   = "../packages/core/src/prisma.rs"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model admins {
+  id       BigInt  @id @default(autoincrement())
+  name     String
+  email    String  @unique
+  password String
+  roles    roles[]
+}
+
+model users {
+  id       BigInt  @id @default(autoincrement())
+  name     String
+  email    String  @unique
+  password String
+  roles    roles[]
+}
+
+model roles {
+  id          BigInt        @id @default(autoincrement())
+  name        String
+  permissions permissions[] @default([])
+  Users       users?        @relation(fields: [usersId], references: [id])
+  usersId     BigInt?
+  Admins      admins?       @relation(fields: [adminsId], references: [id])
+  adminsId    BigInt?
+}
+
+enum permissions {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}

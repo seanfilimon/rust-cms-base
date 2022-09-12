@@ -1,16 +1,14 @@
 use actix_web::cookie::time::error::ComponentRange;
 use actix_web::{HttpResponse, ResponseError};
 use bcrypt::BcryptError;
-use derive_more::From;
+use prisma_client_rust::QueryError;
 use std::fmt::Formatter;
 
-#[derive(From, Debug)]
+#[derive(Debug)]
 pub enum MyError {
     NotFound,
     Unauthorized,
-    PGError(tokio_postgres::Error),
-    PGMError(tokio_pg_mapper::Error),
-    PoolError(deadpool_postgres::PoolError),
+    QueryError(String),
     BadRequest(String),
 }
 
@@ -21,9 +19,7 @@ impl std::fmt::Display for MyError {
         match self {
             MyError::NotFound => write!(f, "Not found"),
             MyError::Unauthorized => write!(f, "Unauthorized"),
-            MyError::PGError(e) => write!(f, "Postgres error: {}", e),
-            MyError::PGMError(e) => write!(f, "Postgres mapper error: {}", e),
-            MyError::PoolError(e) => write!(f, "Pool error: {}", e),
+            MyError::QueryError(e) => write!(f, "Query error: {}", e),
             MyError::BadRequest(e) => write!(f, "Bad request: {}", e),
         }
     }
@@ -53,17 +49,21 @@ impl From<actix_web::Error> for MyError {
     }
 }
 
+impl From<QueryError> for MyError {
+    fn from(e: QueryError) -> Self {
+        MyError::QueryError(e.to_string())
+    }
+}
+
 impl ResponseError for MyError {
     fn error_response(&self) -> HttpResponse {
         match *self {
             MyError::NotFound => HttpResponse::NotFound().finish(),
-            MyError::PoolError(ref err) => {
-                HttpResponse::InternalServerError().body(err.to_string())
-            }
             MyError::BadRequest(ref err) => HttpResponse::BadRequest().body(err.to_string()),
             MyError::Unauthorized => HttpResponse::Unauthorized().finish(),
-            MyError::PGError(ref err) => HttpResponse::InternalServerError().body(err.to_string()),
-            MyError::PGMError(ref err) => HttpResponse::InternalServerError().body(err.to_string()),
+            MyError::QueryError(ref err) => {
+                HttpResponse::InternalServerError().body(err.to_string())
+            }
         }
     }
 }

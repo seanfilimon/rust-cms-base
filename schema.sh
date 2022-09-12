@@ -1,1 +1,0 @@
-psql postgresql://postgres:postgres@localhost:5432/optic -f ./sql/schema.sql
