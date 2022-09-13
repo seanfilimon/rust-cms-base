@@ -1,11 +1,21 @@
 use actix_web::HttpRequest;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     errors::MyError,
-    utils::{validate_admin_token, validate_user_token}, models::{Admin, User},
+    models::{Admin, User},
+    utils::{validate_admin_token, validate_user_token},
 };
 
-pub(crate) mod user;
+pub(crate) mod account {
+    pub(crate) mod admin;
+    pub(crate) mod user;
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RefreshToken {
+    refresh_token: String,
+}
 
 pub fn verify_admin_headers(req: &HttpRequest) -> Result<Admin, MyError> {
     let token = req

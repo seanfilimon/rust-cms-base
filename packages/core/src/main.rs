@@ -14,7 +14,7 @@ mod prisma;
 mod utils;
 mod ws;
 
-use handlers::user::*;
+use handlers::account::*;
 use utils::{validate_admin_token, validate_user_token};
 use ws::*;
 
@@ -77,14 +77,14 @@ async fn main() -> std::io::Result<()> {
             .app_data(actix_web::web::Data::new(srvmon.clone()))
             .service(actix_web::web::resource("/").to(|| async { "Hello world!" }))
             .service(actix_web::web::resource("/ws/").route(web::get().to(ws_index)))
-            .service(login_admin)
-            .service(create_admin_acc)
-            .service(login_user)
-            .service(create_user_acc)
-            .service(refresh_user)
-            .service(refresh_admin)
-            .service(get_user)
-            .service(get_admin)
+            .service(admin::login::login_admin)
+            .service(admin::create::create_admin_acc)
+            .service(user::login::login_user)
+            .service(user::create::create_user_acc)
+            .service(user::refresh::refresh_user)
+            .service(admin::refresh::refresh_admin)
+            .service(user::get_user)
+            .service(admin::get_admin)
     })
     .bind(config.server_addr)?;
     server.run().await

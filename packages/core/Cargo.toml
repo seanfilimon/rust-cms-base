@@ -16,4 +16,5 @@ dotenv = "0.15.0"
 serde = { version = "1.0.137", features = ["derive"] }
 bcrypt = "0.13.0"
 actix-web-grants = "3.0.1"
+oauth2 = "4.2.3"
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.1" }
