@@ -11,6 +11,7 @@ mod errors;
 mod handlers;
 mod models;
 mod prisma;
+mod provider;
 mod utils;
 mod ws;
 
@@ -85,6 +86,10 @@ async fn main() -> std::io::Result<()> {
             .service(admin::refresh::refresh_admin)
             .service(user::get_user)
             .service(admin::get_admin)
+            .service(admin::create::google::create_admin_acc_by_google)
+            .service(user::create::google::create_user_acc_by_google)
+            .service(user::create::google::create_user_acc_by_google_callback)
+            .service(admin::create::google::create_admin_acc_by_google_callback)
     })
     .bind(config.server_addr)?;
     server.run().await

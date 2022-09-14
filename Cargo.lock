@@ -780,6 +780,7 @@ dependencies = [
  "jsonwebtoken",
  "oauth2",
  "prisma-client-rust",
+ "reqwest",
  "serde",
 ]
 

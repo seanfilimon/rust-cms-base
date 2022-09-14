@@ -1,3 +1,5 @@
+pub(crate) mod google;
+
 use actix_web::{post, web, HttpResponse};
 use bcrypt::{hash, DEFAULT_COST};
 

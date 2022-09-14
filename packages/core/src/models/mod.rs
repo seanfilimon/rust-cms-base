@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::prisma;
+use crate::{
+    prisma::{self, Provider},
+    provider::google::GoogleUser,
+};
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Admin {
@@ -8,6 +11,8 @@ pub struct Admin {
     pub name: String,
     pub email: String,
     pub password: String,
+    #[serde(default)]
+    pub provider: String,
     #[serde(default)]
     pub roles: Vec<Roles>,
 }
@@ -19,6 +24,8 @@ pub struct User {
     pub email: String,
     pub password: String,
     #[serde(default)]
+    pub provider: String,
+    #[serde(default)]
     pub roles: Vec<Roles>,
 }
 
@@ -26,6 +33,30 @@ pub struct User {
 pub struct Roles {
     pub name: String,
     pub permissions: Vec<String>,
+}
+
+impl From<GoogleUser> for User {
+    fn from(google_user: GoogleUser) -> Self {
+        Self {
+            name: google_user.display_name,
+            email: google_user.email,
+            password: "".to_string(),
+            roles: vec![],
+            provider: Provider::Google.to_string(),
+        }
+    }
+}
+
+impl From<GoogleUser> for Admin {
+    fn from(google_user: GoogleUser) -> Self {
+        Self {
+            name: google_user.display_name,
+            email: google_user.email,
+            password: "".to_string(),
+            roles: vec![],
+            provider: Provider::Google.to_string(),
+        }
+    }
 }
 
 impl From<prisma::roles::Data> for Roles {
@@ -49,6 +80,7 @@ impl From<prisma::users::Data> for User {
                 .flatten()
                 .map(|r| Roles::from(r))
                 .collect::<Vec<Roles>>(),
+            provider: user.provider.to_string(),
         }
     }
 }
@@ -65,6 +97,7 @@ impl From<prisma::admins::Data> for Admin {
                 .flatten()
                 .map(|r| Roles::from(r))
                 .collect::<Vec<Roles>>(),
+            provider: admin.provider.to_string(),
         }
     }
 }

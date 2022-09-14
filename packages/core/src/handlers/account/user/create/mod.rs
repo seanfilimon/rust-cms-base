@@ -1,7 +1,9 @@
-use actix_web::{web, HttpResponse, post};
+use actix_web::{post, web, HttpResponse};
 use bcrypt::{hash, DEFAULT_COST};
 
 use crate::{errors::MyError, models::User, prisma::PrismaClient, utils::user_tokens};
+
+pub(crate) mod google;
 
 #[post("/account/user/create")]
 pub async fn create_user_acc(
