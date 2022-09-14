@@ -782,6 +782,7 @@ dependencies = [
  "prisma-client-rust",
  "reqwest",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

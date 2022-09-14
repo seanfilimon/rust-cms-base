@@ -20,7 +20,7 @@ pub struct GoogleUser {
     pub picture: String,
 }
 
-pub fn create_acc(typee: &'static str) -> String {
+pub fn login_google(typee: &'static str) -> String {
     let client = BasicClient::new(
         ClientId::new(env::var("GOOGLE_CLIENT_ID").unwrap()),
         Some(ClientSecret::new(env::var("GOOGLE_CLIENT_SECRET").unwrap())),
