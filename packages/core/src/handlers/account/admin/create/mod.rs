@@ -1,3 +1,4 @@
+pub(crate) mod github;
 pub(crate) mod google;
 
 use actix_web::{post, web, HttpResponse};

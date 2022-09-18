@@ -4,7 +4,6 @@ use actix_web::{dev::ServiceRequest, web, Error};
 use actix_web_grants::GrantsMiddleware;
 use config::Config;
 use dotenv::dotenv;
-use errors::MyError;
 use serde::Deserialize;
 
 mod errors;
@@ -25,15 +24,15 @@ pub struct MyConfig {
 }
 
 async fn extract(req: &ServiceRequest) -> Result<Vec<String>, Error> {
-    let headers = req
-        .headers()
-        .get("Authorization")
-        .ok_or(MyError::Unauthorized)?
-        .to_str()
-        .map_err(|_| MyError::Unauthorized)?
-        .replace("Bearer ", "");
+    let headers = req.headers().get("Authorization");
 
-    let admin = validate_admin_token(headers.as_str(), "access");
+    if headers.is_none() {
+        return Ok(vec![]);
+    }
+
+    let headers = headers.unwrap().to_str().unwrap();
+
+    let admin = validate_admin_token(headers, "access");
     if let Ok(admin) = admin {
         return Ok(admin
             .roles
@@ -42,7 +41,7 @@ async fn extract(req: &ServiceRequest) -> Result<Vec<String>, Error> {
             .flatten()
             .collect());
     } else {
-        let user = validate_user_token(headers.as_str(), "access");
+        let user = validate_user_token(headers, "access");
         if let Ok(user) = user {
             return Ok(user
                 .roles
@@ -77,7 +76,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(actix_web::web::Data::new(client.clone()))
             .app_data(actix_web::web::Data::new(srvmon.clone()))
             .service(actix_web::web::resource("/").to(|| async { "Hello world!" }))
-            .service(actix_web::web::resource("/ws/").route(web::get().to(ws_index)))
+            .service(actix_web::web::resource("/ws").route(web::get().to(ws_index)))
             .service(admin::login::login_admin)
             .service(admin::create::create_admin_acc)
             .service(user::login::login_user)
@@ -90,6 +89,10 @@ async fn main() -> std::io::Result<()> {
             .service(user::create::google::create_user_acc_by_google)
             .service(user::create::google::create_user_acc_by_google_callback)
             .service(admin::create::google::create_admin_acc_by_google_callback)
+            .service(user::create::github::create_user_acc_by_github)
+            .service(user::create::github::create_user_acc_by_github_callback)
+            .service(admin::create::github::create_admin_acc_by_github)
+            .service(admin::create::github::create_admin_acc_by_github_callback)
     })
     .bind(config.server_addr)?;
     server.run().await

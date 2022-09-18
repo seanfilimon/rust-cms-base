@@ -11,6 +11,7 @@ datasource db {
 enum provider {
   EMAIL
   GOOGLE
+  GITHUB
 }
 
 model admins {

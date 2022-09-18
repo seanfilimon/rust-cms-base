@@ -6,25 +6,25 @@ use crate::{
     errors::MyError,
     models::User,
     prisma::{self, PrismaClient},
-    provider::google::{google_callback, login_google, GoogleCreateAccCallback},
+    provider::github::{github_callback, login_github, GithubCreateAccCallback},
     utils::user_tokens,
 };
 
-#[post("/account/user/create/google")]
-pub async fn create_user_acc_by_google() -> Result<HttpResponse, MyError> {
-    let auth_url = login_google("user");
+#[post("/account/user/create/github")]
+pub async fn create_user_acc_by_github() -> Result<HttpResponse, MyError> {
+    let auth_url = login_github("user");
 
     Ok(HttpResponse::Found()
         .insert_header((header::LOCATION, auth_url.to_string()))
         .finish())
 }
 
-#[get("/account/user/create/google/callback")]
-pub async fn create_user_acc_by_google_callback(
-    callback: web::Query<GoogleCreateAccCallback>,
+#[get("/account/user/create/github/callback")]
+pub async fn create_user_acc_by_github_callback(
+    callback: web::Query<GithubCreateAccCallback>,
     client: web::Data<PrismaClient>,
 ) -> Result<HttpResponse, MyError> {
-    let user: User = google_callback(callback.into_inner()).await.into();
+    let user: User = github_callback(callback.into_inner()).await.into();
     if client
         .users()
         .find_unique(prisma::users::email::equals(user.email.clone()))
@@ -41,7 +41,7 @@ pub async fn create_user_acc_by_google_callback(
             user.name,
             user.email,
             "".to_string(),
-            vec![prisma::users::provider::set(prisma::Provider::Google)],
+            vec![prisma::users::provider::set(prisma::Provider::Github)],
         )
         .exec()
         .await?;

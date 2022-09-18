@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     prisma::{self, Provider},
-    provider::google::GoogleUser,
+    provider::{github::GithubUser, google::GoogleUser},
 };
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone, PartialEq)]
@@ -55,6 +55,30 @@ impl From<GoogleUser> for Admin {
             password: "".to_string(),
             roles: vec![],
             provider: Provider::Google.to_string(),
+        }
+    }
+}
+
+impl From<GithubUser> for Admin {
+    fn from(github_user: GithubUser) -> Self {
+        Self {
+            name: github_user.display_name,
+            email: github_user.email,
+            password: "".to_string(),
+            roles: vec![],
+            provider: Provider::Github.to_string(),
+        }
+    }
+}
+
+impl From<GithubUser> for User {
+    fn from(github_user: GithubUser) -> Self {
+        Self {
+            name: github_user.display_name,
+            email: github_user.email,
+            password: "".to_string(),
+            roles: vec![],
+            provider: Provider::Github.to_string(),
         }
     }
 }

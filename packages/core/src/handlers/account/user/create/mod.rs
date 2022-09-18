@@ -3,6 +3,7 @@ use bcrypt::{hash, DEFAULT_COST};
 
 use crate::{errors::MyError, models::User, prisma::PrismaClient, utils::user_tokens};
 
+pub(crate) mod github;
 pub(crate) mod google;
 
 #[post("/account/user/create")]
